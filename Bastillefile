@@ -1,0 +1,17 @@
+SERVICE local_unbound enable
+SERVICE local_unbound start
+
+CMD fetch -o /etc/unbound/root.hints https://www.internic.net/domain/named.cache
+CMD local-unbound-setup 1.1.1.1 8.8.8.8
+CMD local-unbound-anchor -a /var/unbound/root.key
+
+CP etc /
+
+CMD sed -e "s,%%SERVER_IP%%,${JAIL_IP},g" -i "" /etc/hosts
+CMD sed -e "s,%%SERVER_IP%%,${JAIL_IP},g" -i "" /etc/unbound/lan-zones.conf
+CMD sed -e "s,%%HOSTNAME%%,unbound.local,g" -i "" /etc/unbound/lan-zones.conf
+
+SERVICE local_unbound restart
+
+RDR udp 53 53
+RDR tcp 53 53
